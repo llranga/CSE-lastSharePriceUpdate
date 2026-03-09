@@ -47,7 +47,7 @@ def update():
         price_to_book_value.append(sheet.cell(row,9).value)
     #print message if any company reaches PBV less than 0.81
     for i in range (0,7,1):
-        if float(price_to_book_value[i]) < 0.81 :
+        if float(price_to_book_value[i]) < 0.9 :
             print(f"Buying target reach {bank_names[i]} @ {last_trade_price[i]}")
             # send telegram message
             my_chat.send_message(f"Buying target reach {bank_names[i]} @ {last_trade_price[i]}")
@@ -62,7 +62,7 @@ def main():
     scheduler.add_job (update,
                       'cron',
                       day_of_week='mon-fri',
-                      hour='5-15',
+                      hour='7-13',
                       minute=0 
                       )
     scheduler.start()
