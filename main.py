@@ -1,3 +1,4 @@
+from pytz import timezone
 import gspread
 from google.oauth2.service_account import Credentials
 from dotenv import load_dotenv
@@ -48,7 +49,7 @@ def update():
     #print message if any company reaches PBV less than 0.81
     for i in range (0,7,1):
         if float(price_to_book_value[i]) < 0.9 :
-            print(f"Buying target reach {bank_names[i]} @ {last_trade_price[i]}")
+            #print(f"Buying target reach {bank_names[i]} @ {last_trade_price[i]}")
             # send telegram message
             my_chat.send_message(f"Buying target reach {bank_names[i]} @ {last_trade_price[i]}")
 
@@ -58,11 +59,12 @@ def update():
     sheet.update_cell(15,2,colombo_time)
 
 def main():
-    scheduler = BlockingScheduler()
+    # schedule time is base on Asia/Colombo time
+    scheduler = BlockingScheduler(timezone = timezone("Asia/Colombo"))
     scheduler.add_job (update,
                       'cron',
                       day_of_week='mon-fri',
-                      hour='7-13',
+                      hour='9-15',
                       minute=0 
                       )
     scheduler.start()
