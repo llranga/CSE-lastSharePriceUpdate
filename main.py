@@ -64,7 +64,7 @@ def main():
     scheduler.add_job (update,
                       'cron',
                       day_of_week='mon-fri',
-                      hour='15-23',
+                      hour='9-15',
                       minute=0 
                       )
     scheduler.start()
