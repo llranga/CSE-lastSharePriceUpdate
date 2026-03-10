@@ -1,4 +1,6 @@
 import requests
+import time
+
 base_url="https://www.cse.lk/api/"
 end_point="companyInfoSummery"
 
@@ -18,4 +20,6 @@ class CSE:
             infor_2 = infor['reqSymbolInfo']
             # update last trade price in a list
             last_trade_price.append(infor_2["lastTradedPrice"])
+            time.sleep(2)
+            
         return last_trade_price

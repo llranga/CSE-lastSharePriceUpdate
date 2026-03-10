@@ -14,4 +14,4 @@ class TelegramMessage:
             "text": message
         }
         requests.post(url, data=data)
-        print("Message sent")
+        #print("Message sent")

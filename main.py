@@ -1,5 +1,6 @@
 from pytz import timezone
 import gspread
+import time
 from google.oauth2.service_account import Credentials
 from dotenv import load_dotenv
 import os
@@ -44,6 +45,8 @@ def update():
     #update cells
     for i in range (0,7,1):
         sheet.update_cell(i+2,6,last_trade_price[i])
+    #wait for 1 second 
+    time.sleep(1)
     # retrieve price to book value from google sheet
     for row in range (2,9,1):
         price_to_book_value.append(sheet.cell(row,9).value)
@@ -53,6 +56,7 @@ def update():
             #print(f"Buying target reach {bank_names[i]} @ {last_trade_price[i]}")
             # send telegram message
             my_chat.send_message(f"Buying target reach {bank_names[i]} @ {last_trade_price[i]}")
+            time.sleep(0.5)
 
     # get current time
     colombo_time = Localtime("Asia/Colombo").get_local_time()
@@ -65,7 +69,7 @@ def main():
     scheduler.add_job (update,
                       'cron',
                       day_of_week='mon-fri',
-                      hour='9-15',
+                      hour='20-23',
                       minute=0 
                       )
     scheduler.start()
