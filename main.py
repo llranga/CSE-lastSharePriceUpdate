@@ -62,9 +62,9 @@ def update():
             #print(f"Buying target reach {bank_names[i]} @ {last_trade_price[i]}")
             # send telegram message
             my_chat.send_message(f"Buying target reach {bank_names[i]} @ {last_trade_price[i]}")
+            logging.info(f"Buying target reach {bank_names[i]} @ {last_trade_price[i]}")
             time.sleep(0.5)
-    #log telegram message sent 
-    logging.info("telegram message sent")
+    
     # get current time
     colombo_time = Localtime("Asia/Colombo").get_local_time()
     #update last update date time in the sheet
