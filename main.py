@@ -3,12 +3,13 @@ import gspread
 from google.oauth2.service_account import Credentials
 from dotenv import load_dotenv
 import os
-load_dotenv()
+import logging
 from localtime import Localtime
 from cse import CSE
 from telegrammessage import TelegramMessage 
 from apscheduler.schedulers.blocking import BlockingScheduler
 
+load_dotenv()
 # open existing google sheet workbook
 scope = ["https://www.googleapis.com/auth/spreadsheets"]
 credns = Credentials.from_service_account_file("credentials.json", scopes=scope)
@@ -68,6 +69,15 @@ def main():
                       minute=0 
                       )
     scheduler.start()
+
+    # logging program running status to logs folder
+    logging.basicConfig(
+    filename="logs/bot.log",
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+                        )
+
+    logging.info("CSE update started")
  
 
 if __name__ == "__main__":
