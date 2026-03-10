@@ -28,6 +28,12 @@ workbook = client.open_by_key(sheet_id)
 banks = ["COMB.N0000","SEYB.N0000","SAMP.N0000","HNB.N0000","DIPD.N0000","TJL.N0000","AHUN.N0000","SERV.N0000"]
 bank_names = ["Commercial","Seylan","Sampath","HNB","Dipped Product","TeeJay","Aitken","Kingsbury"]
 
+# logging logs folder
+logging.basicConfig(
+    filename="logs/bot.log",
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+                        )
 
 def update():
     last_trade_price=[]
@@ -57,14 +63,19 @@ def update():
             # send telegram message
             my_chat.send_message(f"Buying target reach {bank_names[i]} @ {last_trade_price[i]}")
             time.sleep(0.5)
-
+    #log telegram message sent 
+    logging.info("telegram message sent")
     # get current time
     colombo_time = Localtime("Asia/Colombo").get_local_time()
     #update last update date time in the sheet
     sheet.update_cell(15,2,colombo_time)
+    #log google sheet time updated
+    logging.info("Last update time updated in google sheet")
 
 def main():
     # schedule time is base on Asia/Colombo time
+    #log program started
+    logging.info("main function started")
     scheduler = BlockingScheduler(timezone = timezone("Asia/Colombo"))
     scheduler.add_job (update,
                       'cron',
@@ -74,15 +85,6 @@ def main():
                       )
     scheduler.start()
 
-    # logging program running status to logs folder
-    logging.basicConfig(
-    filename="logs/bot.log",
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s"
-                        )
-
-    logging.info("CSE update started")
- 
 
 if __name__ == "__main__":
     main()
