@@ -1,0 +1,1 @@
+This code check last share price of predefined companies on weekdays every hour between 09:00 to 15:00. last share price is updated in google sheet. price to book value is calculated in the google sheet. when price to book value reaches predefined ratio, code send a telegram message with company name and latest share price.
