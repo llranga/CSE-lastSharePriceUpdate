@@ -49,21 +49,21 @@ def update():
     #open the "watchlist" sheet of google sheet workbook
     sheet = workbook.worksheet('watchlist')
     #update cells
-    for i in range (0,7,1):
+    for i in range (0,len(banks),1):
         sheet.update_cell(i+2,6,last_trade_price[i])
     #wait for 1 second 
     time.sleep(1)
     # retrieve price to book value from google sheet
-    for row in range (2,9,1):
+    for row in range (2,10,1):
         price_to_book_value.append(sheet.cell(row,9).value)
     #print message if any company reaches PBV less than 0.81
-    for i in range (0,7,1):
-        if float(price_to_book_value[i]) < 0.9 :
+    for i in range (0,len(price_to_book_value),1):
+        if float(price_to_book_value[i]) < 0.85 :
             #print(f"Buying target reach {bank_names[i]} @ {last_trade_price[i]}")
             # send telegram message
             my_chat.send_message(f"Buying target reach {bank_names[i]} @ {last_trade_price[i]}")
             logging.info(f"Buying target reach {bank_names[i]} @ {last_trade_price[i]}")
-            time.sleep(0.5)
+            time.sleep(1)
     
     # get current time
     colombo_time = Localtime("Asia/Colombo").get_local_time()
@@ -81,7 +81,8 @@ def main():
                       'cron',
                       day_of_week='mon-fri',
                       hour='9-15',
-                      minute=0 
+                      minute=0,
+                      max_instances=1
                       )
     scheduler.start()
 
