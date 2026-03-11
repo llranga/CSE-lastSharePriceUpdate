@@ -32,30 +32,47 @@ bank_names = ["Commercial","Seylan","Sampath","HNB","Dipped Product","TeeJay","A
 logging.basicConfig(
     filename="logs/bot.log",
     level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s"
+    format="%(asctime)s - %(levelname)s - %(message)s"   
                         )
+
+# create instances
+# create  my cse with known company code and names
+my_cse = CSE(banks,bank_names)
+#create telegram message instance
+my_chat = TelegramMessage(bot_token,chat_id)
+
 
 def update():
     last_trade_price=[]
     price_to_book_value=[]
 
-    # create  my cse with known company code and names
-    my_cse = CSE(banks,bank_names)
-    last_trade_price = my_cse.get_last_trade_price()
+    try:
+        last_trade_price = my_cse.get_last_trade_price()
+    except Exception as e:
+        logging.error(f"CSE price fetch API failed: {e}")
+        return
 
-    #create telegram message instance
-    my_chat = TelegramMessage(bot_token,chat_id)
+    try:
+        #open the "watchlist" sheet of google sheet workbook
+        sheet = workbook.worksheet('watchlist')
 
-    #open the "watchlist" sheet of google sheet workbook
-    sheet = workbook.worksheet('watchlist')
-    #update cells
-    for i in range (0,len(banks),1):
-        sheet.update_cell(i+2,6,last_trade_price[i])
-    #wait for 1 second 
-    time.sleep(1)
-    # retrieve price to book value from google sheet
-    for row in range (2,10,1):
-        price_to_book_value.append(sheet.cell(row,9).value)
+        #update cells
+        for i in range (0,len(banks),1):
+            sheet.update_cell(i+2,6,last_trade_price[i])
+        #wait for 1 second 
+        time.sleep(1)
+    except Exception as e:
+        logging.error(f"Google sheet update failed: {e}")
+        return
+
+    try:
+        # retrieve price to book value from google sheet
+        for row in range (2,10,1):
+            price_to_book_value.append(sheet.cell(row,9).value)
+    except Exception as e:
+        logging.error(f"P/B ratio fetching from goggle sheet failed: {e}")
+        return
+
     #print message if any company reaches PBV less than 0.81
     for i in range (0,len(price_to_book_value),1):
         if float(price_to_book_value[i]) < 0.85 :
@@ -80,9 +97,9 @@ def main():
     scheduler.add_job (update,
                       'cron',
                       day_of_week='mon-fri',
-                      hour='9-15',
+                      hour='23',
                       minute=0,
-                      max_instances=1
+                      max_instances = 1
                       )
     scheduler.start()
 
