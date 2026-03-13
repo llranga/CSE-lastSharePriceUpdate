@@ -84,7 +84,7 @@ def update():
         for row in range (2,10,1):
             price_to_book_value.append(sheet.cell(row,9).value)
     except Exception as e:
-        logging.error(f"P/B ratio fetching from goggle sheet failed: {e}")
+        logging.error(f"Price to Book value ratio fetching from goggle sheet failed: {e}")
         return
 
     #send message if any company reaches PBV less than 0.81
