@@ -40,30 +40,44 @@ logging.basicConfig(
 my_cse = CSE(banks,bank_names)
 #create telegram message instance
 my_chat = TelegramMessage(bot_token,chat_id)
+MAX_ATTEMPT=5
 
 
 def update():
     last_trade_price=[]
     price_to_book_value=[]
 
-    try:
-        last_trade_price = my_cse.get_last_trade_price()
-    except Exception as e:
-        logging.error(f"CSE price fetch API failed: {e}")
-        return
+    for attempt in range (MAX_ATTEMPT):
+        try:
+            last_trade_price = my_cse.get_last_trade_price()
+            #if API call success break the loop
+            break
+        except Exception as e:
+            # wait in 3^0,3^1 etc
+            wait = 3 ** attempt
+            if attempt < MAX_ATTEMPT -1:
+                time.sleep(wait)            
+            else:
+                logging.error(f"CSE price fetch API failed for {attempt} times : {e}")
 
-    try:
-        #open the "watchlist" sheet of google sheet workbook
-        sheet = workbook.worksheet('watchlist')
-
-        #update cells
-        for i in range (0,len(banks),1):
-            sheet.update_cell(i+2,6,last_trade_price[i])
-        #wait for 1 second 
-        time.sleep(1)
-    except Exception as e:
-        logging.error(f"Google sheet update failed: {e}")
-        return
+    for retry in range(MAX_ATTEMPT):
+        try:
+            #open the "watchlist" sheet of google sheet workbook
+            sheet = workbook.worksheet('watchlist')
+            #update cells
+            for i in range (0,len(banks),1):
+                sheet.update_cell(i+2,6,last_trade_price[i])
+                #wait for 1 second 
+                time.sleep(1)
+            #break the loop
+            break
+        except Exception as e:
+            wait = 3 ** retry
+            if retry < MAX_ATTEMPT-1:
+                time.sleep(wait)
+            else:
+                logging.error(f"Google sheet update failed for {retry} attempts : {e}")
+            
 
     try:
         # retrieve price to book value from google sheet
@@ -73,15 +87,25 @@ def update():
         logging.error(f"P/B ratio fetching from goggle sheet failed: {e}")
         return
 
-    #print message if any company reaches PBV less than 0.81
+    #send message if any company reaches PBV less than 0.81
     for i in range (0,len(price_to_book_value),1):
         if float(price_to_book_value[i]) < 0.85 :
             #print(f"Buying target reach {bank_names[i]} @ {last_trade_price[i]}")
             # send telegram message
-            my_chat.send_message(f"Buying target reach {bank_names[i]} @ {last_trade_price[i]}")
-            logging.info(f"Buying target reach {bank_names[i]} @ {last_trade_price[i]}")
-            time.sleep(1)
-    
+            for a in range(MAX_ATTEMPT):
+                try:
+                    my_chat.send_message(f"Buying target reach {bank_names[i]} @ {last_trade_price[i]}")
+                    time.sleep(1)
+                    #break the loop
+                    break
+                except Exception as e:
+                    wait = 3 ** a
+                    if a < MAX_ATTEMPT-1:
+                        time.sleep(wait)
+                    else:            
+                        logging.info(f"Buying target reach {bank_names[i]} @ {last_trade_price[i]} but telegram message failed")
+
+        
     # get current time
     colombo_time = Localtime("Asia/Colombo").get_local_time()
     #update last update date time in the sheet
